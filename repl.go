@@ -23,16 +23,16 @@ func init() {
 			callback:    commandExit,
 		},
 		"help": {
-			name: 		 "help",
+			name:        "help",
 			description: "Displays a help message",
-			callback: 	 commandHelp,
+			callback:    commandHelp,
 		},
 	}
 }
 
 func replInit() {
 	reader := bufio.NewScanner(os.Stdin)
-	
+
 	for {
 		fmt.Print("Pokedex > ")
 		reader.Scan()
@@ -45,10 +45,10 @@ func replInit() {
 		if cmd, ok := commandMap[cmdString]; ok {
 			err := cmd.callback()
 			if err != nil {
-				fmt.Errorf("Unknown command %v", err)
+				fmt.Printf("Unknown command %v", err)
 				continue
 			}
-		}else {
+		} else {
 			fmt.Println("Unknown command")
 			continue
 		}
@@ -58,7 +58,7 @@ func replInit() {
 func commandExit() error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
-	
+
 	return nil
 }
 
