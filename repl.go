@@ -10,13 +10,16 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
-var commandMap map[string]cliCommand
+type config struct {
+	Next     string
+	Previous string
+}
 
-func init() {
-	commandMap = map[string]cliCommand{
+func getCommands() map[string]cliCommand {
+	return map[string]cliCommand{
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
@@ -27,12 +30,25 @@ func init() {
 			description: "Displays a help message",
 			callback:    commandHelp,
 		},
+		"map": {
+			name:        "map",
+			description: "Displays the name of 20 location areas in the Pokemon World",
+			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Displays the previous 20 location areas in the Pokemon World",
+			callback:    commandMapb,
+		},
 	}
 }
 
 func replInit() {
 	reader := bufio.NewScanner(os.Stdin)
-
+	config := &config{
+		"https://pokeapi.co/api/v2/location-area/",
+		"",
+	}
 	for {
 		fmt.Print("Pokedex > ")
 		reader.Scan()
@@ -41,9 +57,10 @@ func replInit() {
 		if len(cleaned) == 0 {
 			continue
 		}
+
 		cmdString := cleaned[0]
-		if cmd, ok := commandMap[cmdString]; ok {
-			err := cmd.callback()
+		if cmd, ok := getCommands()[cmdString]; ok {
+			err := cmd.callback(config)
 			if err != nil {
 				fmt.Printf("Unknown command %v", err)
 				continue
@@ -53,23 +70,6 @@ func replInit() {
 			continue
 		}
 	}
-}
-
-func commandExit() error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
-	os.Exit(0)
-
-	return nil
-}
-
-func commandHelp() error {
-	fmt.Println("\nWelcome to the Pokedex!")
-	fmt.Println("Usage:\n")
-	for _, cmd := range commandMap {
-		fmt.Println(cmd.name + ": " + cmd.description)
-	}
-
-	return nil
 }
 
 func cleanInput(text string) []string {
