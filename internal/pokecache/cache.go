@@ -27,7 +27,7 @@ func NewCache(interval time.Duration) *Cache {
 	return cache
 }
 
-func (c *Cache) add(key string, val []byte) {
+func (c *Cache) Add(key string, val []byte) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -37,7 +37,7 @@ func (c *Cache) add(key string, val []byte) {
 	}
 }
 
-func (c *Cache) get(key string) ([]byte, bool) {
+func (c *Cache) Get(key string) ([]byte, bool) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
