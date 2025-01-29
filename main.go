@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/Suppur/pokedexcli/internal/pokeapi"
 	"github.com/Suppur/pokedexcli/internal/pokecache"
 )
 
@@ -12,7 +13,12 @@ func cacheInit() *pokecache.Cache {
 }
 
 func main() {
+	pokeClient := pokeapi.NewClient(5 * time.Second)
+	conf := &config{
+		pokeapiClient: pokeClient,
+	}
+
 	cacheInit()
-	replInit()
+	replInit(conf)
 
 }

@@ -1,94 +1,41 @@
 package main
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
 )
 
-type locations struct {
-	Count    int     `json:"count"`
-	Next     *string `json:"next"`
-	Previous *string `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
-}
-
-func commandMap(c *config) error {
-	res, err := http.Get(c.Next)
+func commandMapf(c *config) error {
+	locationsRes, err := c.pokeapiClient.ListLocations(c.nextURL)
 	if err != nil {
-		return fmt.Errorf("error fetching locations: %w", err)
+		return err
 	}
 
-	body, err := io.ReadAll(res.Body)
-	defer res.Body.Close()
-	if res.StatusCode > 299 {
-		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-	}
-	if err != nil {
-		return fmt.Errorf("error fetching locations: %w", err)
-	}
+	c.nextURL = locationsRes.Next
+	c.previousURL = locationsRes.Previous
 
-	var loc locations
-
-	err = json.Unmarshal([]byte(body), &loc)
-	if err != nil {
-		return fmt.Errorf("error decoding JSON: %w", err)
+	for _, loc := range locationsRes.Results {
+		fmt.Println(loc.Name)
 	}
-
-	for _, area := range loc.Results {
-		fmt.Println(area.Name)
-	}
-	if loc.Previous != nil {
-		c.Previous = *loc.Previous
-	} else {
-		c.Previous = ""
-	}
-	c.Next = *loc.Next
 
 	return nil
 }
 
 func commandMapb(c *config) error {
-	if c.Previous == "" {
-		fmt.Println("you're on the first page")
-		return nil
+	if c.previousURL == nil {
+		return errors.New("you're on the first page")
 	}
 
-	res, err := http.Get(c.Previous)
+	locationsRes, err := c.pokeapiClient.ListLocations(c.previousURL)
 	if err != nil {
 		return err
 	}
 
-	body, err := io.ReadAll(res.Body)
-	defer res.Body.Close()
-	if res.StatusCode > 299 {
-		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-	}
-	if err != nil {
-		return fmt.Errorf("error fetching locations: %w", err)
-	}
+	c.nextURL = locationsRes.Next
+	c.previousURL = locationsRes.Previous
 
-	var loc locations
-
-	err = json.Unmarshal([]byte(body), &loc)
-	if err != nil {
-		return fmt.Errorf("error decoding JSON: %w", err)
-	}
-
-	for _, area := range loc.Results {
-		fmt.Println(area.Name)
-	}
-
-	c.Next = *loc.Next
-	if loc.Previous != nil {
-		c.Previous = *loc.Previous
-	} else {
-		c.Previous = ""
+	for _, loc := range locationsRes.Results {
+		fmt.Println(loc.Name)
 	}
 
 	return nil
