@@ -54,6 +54,11 @@ func getCommands() map[string]cliCommand {
 			description: "Catch a pokemon!",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect a previously caught pokemon",
+			callback:    commandInspect,
+		},
 	}
 }
 
@@ -72,7 +77,7 @@ func replInit(conf *config) {
 		if cmd, ok := getCommands()[cmdString]; ok {
 			err := cmd.callback(conf, cleaned)
 			if err != nil {
-				fmt.Printf("Unknown command %v", err)
+				fmt.Printf("Unknown command %v\n", err)
 				continue
 			}
 		} else {
